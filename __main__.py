@@ -21,13 +21,15 @@ class Alien(pygame.sprite.Sprite):
 
         alien_group.add(self)
 
-    def fall(self):
+    def update(self):
         self.rect.center = [self.rect.center[0],self.rect.center[1]+1]
+    
 
 alien1 = Alien()
 
+
+player_group = pygame.sprite.Group()
 class Player(pygame.sprite.Sprite):
-    player_group = pygame.sprite.Group()
 
     def __init__(self):
         super().__init__()
@@ -40,13 +42,39 @@ class Player(pygame.sprite.Sprite):
 
         self.rect.center = [300,390]
 
-        self.player_group.add(self)
+        player_group.add(self)
 
     def move_left(self):
-        self.rect.center = [self.rect.center[0]-10,390]
+        self.rect.center = [self.rect.center[0]-10,self.rect.center[1]]
     def move_right(self):
-        self.rect.center = [self.rect.center[0]+10,390]
+        self.rect.center = [self.rect.center[0]+10,self.rect.center[1]]
+    def move_top(self):
+        self.rect.center = [self.rect.center[0],self.rect.center[1]-10]
+    def move_down(self):
+        self.rect.center = [self.rect.center[0],self.rect.center[1]+10]
+
+    def shoot(self):
+        bullet_group.add(Bullet(self.rect.center[0],self.rect.center[1]))
+
+
 p1 = Player()
+
+bullet_group = pygame.sprite.Group()
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        
+        self.image = pygame.image.load("dollar.png")
+        #sself.image.fill((255,255,255))
+        self.rect = self.image.get_rect()
+
+        self.rect.center = [x,y]
+
+        bullet_group.add(self)
+
+
+    def update(self):
+        self.rect.center = [self.rect.center[0],self.rect.center[1]-2]
 
 #Bucle principal
 while True:
@@ -56,18 +84,35 @@ while True:
             sys.exit()
         
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_RIGHT:
+            if event.key == pygame.K_d:
                 p1.move_right()
-            if event.key == pygame.K_LEFT:
+            if event.key == pygame.K_a:
                 p1.move_left()
-
-
+            if event.key == pygame.K_w:
+                p1.move_top()
+            if event.key == pygame.K_s:
+                p1.move_down()
+            if event.key == pygame.K_SPACE:
+                p1.shoot()
+            
 
     pygame.display.flip()
     scren.fill((0,0,0))
 
-    alien1.fall()
+    alien_group.update()
+    bullet_group.update()
+
     alien_group.draw(scren)
-    p1.player_group.draw(scren)
+    player_group.draw(scren)
+    bullet_group.draw(scren)
+
+    
+    for alien in alien_group.sprites():
+        for bullet in bullet_group.sprites():
+            if alien.rect.colliderect(bullet.rect):
+                bullet_group.remove(bullet)
+                alien_group.remove(alien)
+        
+            
 
     clock.tick(23)
